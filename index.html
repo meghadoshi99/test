@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Will you be my Valentine?</title>
+
+  <!-- Confetti library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg1: #ffd6e7;
+      --bg2: #ffeef6;
+      --card: #ffffffcc;
+      --yes: #ff3b7a;
+      --yesHover: #ff1f68;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at top, var(--bg2), var(--bg1));
+      font-family: system-ui, sans-serif;
+      overflow-x: hidden;
+      padding: 16px;
+    }
+
+    /* Floating hearts */
+    .heart {
+      position: fixed;
+      bottom: -20px;
+      font-size: 20px;
+      opacity: 0.7;
+      animation: floatUp linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes floatUp {
+      from { transform: translateY(0) scale(1); opacity: 0.8; }
+      to { transform: translateY(-110vh) scale(1.4); opacity: 0; }
+    }
+
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .card {
+      width: min(720px, 92vw);
+      padding: 26px 22px;
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      border-radius: 22px;
+      text-align: center;
+      box-shadow: 0 18px 60px rgba(0,0,0,.15);
+      animation: fadeIn .6s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      font-size: clamp(26px, 4vw, 44px);
+      margin: 12px 0 18px;
+    }
+
+    p {
+      font-size: 18px;
+      margin: 10px 0 25px;
+    }
+
+    .button-zone {
+      position: relative;
+      width: min(520px, 92%);
+      height: 150px;
+      margin: 0 auto;
+    }
+
+    button {
+      padding: 16px 24px;
+      font-size: 18px;
+      font-weight: 800;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,.14);
+    }
+
+    #yesBtn {
+      position: absolute;
+      top: 50%;
+      left: 18%;
+      transform: translateY(-50%);
+      background: var(--yes);
+      color: #fff;
+    }
+
+    #noBtn {
+      position: absolute;
+      top: 50%;
+      left: 62%;
+      transform: translateY(-50%);
+      background: #e5e7eb;
+    }
+
+    .result {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .gallery {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .gallery img {
+      width: 100%;
+      border-radius: 14px;
+      box-shadow: 0 8px 18px rgba(0,0,0,.2);
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="hearts"></div>
+<canvas id="confettiCanvas"></canvas>
+
+<!-- MUSIC -->
+<audio id="bgMusic" src="music.mp3" loop></audio>
+
+<main class="card">
+
+  <!-- INTRO -->
+  <section id="introScreen">
+    <h1>Hi Monks 💌</h1>
+    <p>
+      You are so special to me. I have a special question to ask you.
+      Would you like to proceed?
+    </p>
+    <button id="introYes">Yes</button>
+    <button id="introNo">No</button>
+  </section>
+
+  <!-- VALENTINE -->
+  <section id="valentineScreen" style="display:none;">
+    <h1>Arnav will you be my valentine?</h1>
+
+    <section class="button-zone" id="zone">
+      <button id="yesBtn">Yes</button>
+      <button id="noBtn">No</button>
+    </section>
+
+    <section class="result" id="result">
+      <h2>YAY! 🎉</h2>
+
+      <!-- PHOTO GALLERY -->
+      <div class="gallery">
+        <img src="photos/photo1.jpg" alt="Us 1">
+        <img src="photos/photo2.jpg" alt="Us 2">
+        <img src="photos/photo3.jpg" alt="Us 3">
+      </div>
+    </section>
+  </section>
+
+</main>
+
+<script>
+/* Floating hearts */
+const heartsContainer = document.getElementById("hearts");
+function createHeart() {
+  const heart = document.createElement("div");
+  heart.className = "heart";
+  heart.innerText = "💗";
+  heart.style.left = Math.random() * 100 + "vw";
+  heart.style.animationDuration = (4 + Math.random() * 4) + "s";
+  heartsContainer.appendChild(heart);
+  setTimeout(() => heart.remove(), 8000);
+}
+setInterval(createHeart, 500);
+
+/* Intro logic */
+const introScreen = document.getElementById("introScreen");
+const valentineScreen = document.getElementById("valentineScreen");
+const introYes = document.getElementById("introYes");
+const introNo = document.getElementById("introNo");
+const music = document.getElementById("bgMusic");
+
+introYes.addEventListener("click", () => {
+  introScreen.style.display = "none";
+  valentineScreen.style.display = "block";
+  music.play().catch(() => {});
+});
+
+introNo.addEventListener("click", () => {
+  introNo.innerText = "Are you sure? 😢";
+});
+
+/* Valentine logic */
+const zone = document.getElementById("zone");
+const yesBtn = document.getElementById("yesBtn");
+const noBtn = document.getElementById("noBtn");
+const result = document.getElementById("result");
+
+yesBtn.addEventListener("click", () => {
+  zone.style.display = "none";
+  result.style.display = "block";
+  confettiInstance({ particleCount: 300, spread: 140 });
+});
+
+/* Confetti */
+const confettiCanvas = document.getElementById("confettiCanvas");
+const confettiInstance = confetti.create(confettiCanvas, {
+  resize: true,
+  useWorker: true
+});
+</script>
+
+</body>
+</html>
+
+
+
