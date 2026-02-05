@@ -150,6 +150,22 @@
       from { transform: scale(.96); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
+
+    /* STACK BUTTONS ON SMALL SCREENS */
+    @media (max-width: 480px) {
+      #introScreen button,
+      #valentineScreen button {
+        position: static;
+        display: block;
+        width: 80%;
+        margin: 10px auto;
+        transform: none;
+      }
+
+      .button-zone {
+        height: auto;
+      }
+    }
   </style>
 </head>
 
@@ -219,7 +235,21 @@ const music = document.getElementById("bgMusic");
 introYes.addEventListener("click", () => {
   introScreen.style.display = "none";
   valentineScreen.style.display = "block";
+
+  // play music
   music.play().catch(() => {});
+
+  // Attach pointermove listener AFTER showing Valentine screen
+  const zone = document.getElementById("zone");
+  const noBtn = document.getElementById("noBtn");
+  zone.addEventListener("pointermove", e => {
+    const b = noBtn.getBoundingClientRect();
+    const d = Math.hypot(
+      (b.left + b.width / 2) - e.clientX,
+      (b.top + b.height / 2) - e.clientY
+    );
+    if (d < 140) moveNo(e.clientX, e.clientY);
+  });
 });
 
 introNo.addEventListener("click", () => {
@@ -227,7 +257,6 @@ introNo.addEventListener("click", () => {
 });
 
 /* Valentine yes/no logic */
-const zone = document.getElementById("zone");
 const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
 const result = document.getElementById("result");
@@ -235,6 +264,7 @@ const hint = document.getElementById("hint");
 
 /* YES button click */
 yesBtn.addEventListener("click", () => {
+  const zone = document.getElementById("zone");
   zone.style.display = "none";
   hint.style.display = "none";
   result.style.display = "block";
@@ -247,6 +277,7 @@ function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n));
 }
 function moveNo(px, py) {
+  const zone = document.getElementById("zone");
   const z = zone.getBoundingClientRect();
   const b = noBtn.getBoundingClientRect();
   let dx = (b.left + b.width / 2) - px;
@@ -262,16 +293,6 @@ function moveNo(px, py) {
   noBtn.style.top = newTop + "px";
   noBtn.style.transform = "none";
 }
-
-zone.addEventListener("pointermove", e => {
-  const b = noBtn.getBoundingClientRect();
-  const d = Math.hypot(
-    (b.left + b.width / 2) - e.clientX,
-    (b.top + b.height / 2) - e.clientY
-  );
-  if (d < 140) moveNo(e.clientX, e.clientY);
-});
-
 noBtn.addEventListener("click", e => e.preventDefault());
 
 /* CONFETTI */
