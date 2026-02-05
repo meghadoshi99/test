@@ -83,9 +83,13 @@
       width: min(520px, 92%);
       height: 150px;
       margin: 0 auto;
+      touch-action: none;
     }
 
     button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
       padding: 16px 24px;
       font-size: 18px;
       font-weight: 800;
@@ -93,47 +97,49 @@
       border: none;
       cursor: pointer;
       box-shadow: 0 10px 24px rgba(0,0,0,.14);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform .12s ease, background .12s ease;
     }
 
     #yesBtn {
-      position: absolute;
-      top: 50%;
       left: 18%;
-      transform: translateY(-50%);
       background: var(--yes);
       color: #fff;
     }
+    #yesBtn:hover { background: var(--yesHover); }
 
     #noBtn {
-      position: absolute;
-      top: 50%;
       left: 62%;
-      transform: translateY(-50%);
       background: #e5e7eb;
+      color: #111827;
+    }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 13px;
+      opacity: .7;
     }
 
     .result {
       display: none;
-      margin-top: 20px;
+      margin-top: 18px;
+      animation: pop .35s ease;
     }
 
-    .gallery {
-      margin-top: 20px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
+    .result h2 {
+      font-size: clamp(30px, 4.5vw, 46px);
+      margin: 10px 0;
     }
 
-    .gallery img {
-      width: 100%;
-      border-radius: 14px;
-      box-shadow: 0 8px 18px rgba(0,0,0,.2);
+    @keyframes pop {
+      from { transform: scale(.96); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
     }
   </style>
 </head>
 
 <body>
-
 <div id="hearts"></div>
 <canvas id="confettiCanvas"></canvas>
 
@@ -142,35 +148,27 @@
 
 <main class="card">
 
-  <!-- INTRO -->
+  <!-- INTRO SCREEN -->
   <section id="introScreen">
     <h1>Hi Monks 💌</h1>
-    <p>
-      You are so special to me. I have a special question to ask you.
-      Would you like to proceed?
-    </p>
+    <p>You are so special to me. I have a special question to ask you.<br>Would you like to proceed?</p>
     <button id="introYes">Yes</button>
     <button id="introNo">No</button>
   </section>
 
-  <!-- VALENTINE -->
+  <!-- VALENTINE SCREEN -->
   <section id="valentineScreen" style="display:none;">
-    <h1>Arnav will you be my valentine?</h1>
+    <h1>Arnav, will you be my valentine?</h1>
 
     <section class="button-zone" id="zone">
       <button id="yesBtn">Yes</button>
       <button id="noBtn">No</button>
     </section>
 
+    <div class="hint" id="hint">“No” seems a bit shy 😈</div>
+
     <section class="result" id="result">
       <h2>YAY! 🎉</h2>
-
-      <!-- PHOTO GALLERY -->
-      <div class="gallery">
-        <img src="photo1.jpg" alt="Us 1">
-        <img src="photo2.jpg" alt="Us 2">
-        <img src="photo3.jpg" alt="Us 3">
-      </div>
     </section>
   </section>
 
@@ -190,7 +188,7 @@ function createHeart() {
 }
 setInterval(createHeart, 500);
 
-/* Intro logic */
+/* Intro screen logic */
 const introScreen = document.getElementById("introScreen");
 const valentineScreen = document.getElementById("valentineScreen");
 const introYes = document.getElementById("introYes");
@@ -207,29 +205,90 @@ introNo.addEventListener("click", () => {
   introNo.innerText = "Are you sure? 😢";
 });
 
-/* Valentine logic */
+/* Valentine yes/no logic */
 const zone = document.getElementById("zone");
 const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
 const result = document.getElementById("result");
+const hint = document.getElementById("hint");
 
+/* YES button click */
 yesBtn.addEventListener("click", () => {
   zone.style.display = "none";
+  hint.style.display = "none";
   result.style.display = "block";
-  confettiInstance({ particleCount: 300, spread: 140 });
+  resizeConfettiCanvas();
+  fullScreenConfetti();
 });
 
-/* Confetti */
+/* NO button runs away */
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, n));
+}
+function moveNo(px, py) {
+  const z = zone.getBoundingClientRect();
+  const b = noBtn.getBoundingClientRect();
+  let dx = (b.left + b.width / 2) - px;
+  let dy = (b.top + b.height / 2) - py;
+  let mag = Math.hypot(dx, dy) || 1;
+  dx /= mag;
+  dy /= mag;
+  let newLeft = (b.left - z.left) + dx * 150;
+  let newTop  = (b.top - z.top) + dy * 150;
+  newLeft = clamp(newLeft, 0, z.width - b.width);
+  newTop  = clamp(newTop, 0, z.height - b.height);
+  noBtn.style.left = newLeft + "px";
+  noBtn.style.top = newTop + "px";
+  noBtn.style.transform = "none";
+}
+
+zone.addEventListener("pointermove", e => {
+  const b = noBtn.getBoundingClientRect();
+  const d = Math.hypot(
+    (b.left + b.width / 2) - e.clientX,
+    (b.top + b.height / 2) - e.clientY
+  );
+  if (d < 140) moveNo(e.clientX, e.clientY);
+});
+
+noBtn.addEventListener("click", e => e.preventDefault());
+
+/* CONFETTI */
 const confettiCanvas = document.getElementById("confettiCanvas");
-const confettiInstance = confetti.create(confettiCanvas, {
-  resize: true,
-  useWorker: true
-});
-</script>
+function resizeConfettiCanvas() {
+  const dpr = Math.max(1, window.devicePixelRatio || 1);
+  confettiCanvas.width = Math.floor(window.innerWidth * dpr);
+  confettiCanvas.height = Math.floor(window.innerHeight * dpr);
+  confettiCanvas.style.width = "100vw";
+  confettiCanvas.style.height = "100vh";
+}
+window.addEventListener("resize", resizeConfettiCanvas);
+window.addEventListener("orientationchange", () => setTimeout(resizeConfettiCanvas, 150));
 
+const confettiInstance = confetti.create(confettiCanvas, { resize: false, useWorker: true });
+
+function fullScreenConfetti() {
+  const end = Date.now() + 1600;
+  (function frame() {
+    confettiInstance({
+      particleCount: 12,
+      spread: 90,
+      startVelocity: 45,
+      ticks: 180,
+      origin: { x: Math.random(), y: Math.random() * 0.3 }
+    });
+    if (Date.now() < end) requestAnimationFrame(frame);
+  })();
+  setTimeout(() => {
+    confettiInstance({
+      particleCount: 300,
+      spread: 140,
+      startVelocity: 60,
+      ticks: 220,
+      origin: { x: 0.5, y: 0.55 }
+    });
+  }, 300);
+}
+</script>
 </body>
 </html>
-
-
-
-
