@@ -132,6 +132,20 @@
       margin: 10px 0;
     }
 
+    /* Photo gallery */
+    .gallery {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .gallery img {
+      width: 100%;
+      border-radius: 14px;
+      box-shadow: 0 8px 18px rgba(0,0,0,.2);
+    }
+
     @keyframes pop {
       from { transform: scale(.96); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
@@ -169,6 +183,13 @@
 
     <section class="result" id="result">
       <h2>YAY! 🎉</h2>
+
+      <!-- PHOTO GALLERY -->
+      <div class="gallery">
+        <img src="photo1.jpg">
+        <img src="photo2.jpg">
+        <img src="photo3.jpg">
+      </div>
     </section>
   </section>
 
