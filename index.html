@@ -62,11 +62,12 @@ button {
   transition: transform .12s ease, background .12s ease;
 }
 
-#yesBtn { left:18%; background: var(--yes); color:#fff; }
-#yesBtn:hover { background: var(--yesHover); }
-#noBtn { left:62%; background:#e5e7eb; color:#111827; }
-
+/* Intro buttons horizontal spacing */
 #introScreen button { position: static; margin: 0; }
+
+#yesBtn { position: absolute; top:50%; left:18%; transform: translateY(-50%); background: var(--yes); color:#fff; }
+#yesBtn:hover { background: var(--yesHover); }
+#noBtn { position: absolute; top:50%; left:62%; transform: translateY(-50%); background:#e5e7eb; color:#111827; }
 
 .hint { margin-top: 10px; font-size: 13px; opacity:.7; }
 
@@ -111,54 +112,47 @@ button {
 <section id="result" class="result">
   <h2>I LOVE YOU!!! 💖</h2>
   <div class="gallery">
-    <img src="photo1.jpg" alt="Us">
-    <img src="photo2.jpg" alt="Us">
-    <img src="photo3.jpg" alt="Us">
+    <img src="photo1.jpg" alt="">
+    <img src="photo2.jpg" alt="">
+    <img src="photo3.jpg" alt="">
   </div>
 </section>
 
 </main>
 
 <script>
-/* Intro screen logic */
 const introScreen = document.getElementById("introScreen");
 const valentineScreen = document.getElementById("valentineScreen");
 const introYes = document.getElementById("introYes");
 const introNo = document.getElementById("introNo");
 const music = document.getElementById("bgMusic");
-
-introYes.addEventListener("click", () => {
-  introScreen.style.display = "none";
-  valentineScreen.style.display = "block";
-  music.play().catch(()=>{});
-
-  // Initialize runaway No button
-  const zone = document.getElementById("zone");
-  const noBtn = document.getElementById("noBtn");
-  zone.addEventListener("pointermove", e=>{
-    const b = noBtn.getBoundingClientRect();
-    const d = Math.hypot((b.left+b.width/2)-e.clientX,(b.top+b.height/2)-e.clientY);
-    if(d<140) moveNo(e.clientX,e.clientY);
-  });
-});
-
-introNo.addEventListener("click", ()=>{ introNo.innerText="Are you sure? 😢"; });
-
-/* Valentine screen logic */
 const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
 const result = document.getElementById("result");
 const hint = document.getElementById("hint");
-const valentineQuestion = document.getElementById("valentineQuestion");
 
-yesBtn.addEventListener("click", ()=>{
-  valentineScreen.style.display="none";
-  hint.style.display="none";
-  result.style.display="block";
-  resizeConfettiCanvas();
-  fullScreenConfetti();
-});
+// CONFETTI
+const confettiCanvas=document.getElementById("confettiCanvas");
+const confettiInstance=confetti.create(confettiCanvas,{resize:false,useWorker:true});
+function resizeConfettiCanvas(){
+  const dpr=Math.max(1,window.devicePixelRatio||1);
+  confettiCanvas.width=Math.floor(window.innerWidth*dpr);
+  confettiCanvas.height=Math.floor(window.innerHeight*dpr);
+  confettiCanvas.style.width="100vw";
+  confettiCanvas.style.height="100vh";
+}
+window.addEventListener("resize",resizeConfettiCanvas);
+resizeConfettiCanvas();
+function fullScreenConfetti(){
+  const end=Date.now()+1600;
+  (function frame(){
+    confettiInstance({particleCount:12,spread:90,startVelocity:45,ticks:180,origin:{x:Math.random(),y:Math.random()*0.3}});
+    if(Date.now()<end) requestAnimationFrame(frame);
+  })();
+  setTimeout(()=>{ confettiInstance({particleCount:300,spread:140,startVelocity:60,ticks:220,origin:{x:0.5,y:0.55}}); },300);
+}
 
+// HELPER for No button
 function clamp(n,min,max){ return Math.max(min,Math.min(max,n)); }
 function moveNo(px,py){
   const zone=document.getElementById("zone");
@@ -176,27 +170,40 @@ function moveNo(px,py){
   noBtn.style.top=newTop+"px";
   noBtn.style.transform="none";
 }
-noBtn.addEventListener("click",e=>e.preventDefault());
 
-/* Confetti */
-const confettiCanvas=document.getElementById("confettiCanvas");
-function resizeConfettiCanvas(){
-  const dpr=Math.max(1,window.devicePixelRatio||1);
-  confettiCanvas.width=Math.floor(window.innerWidth*dpr);
-  confettiCanvas.height=Math.floor(window.innerHeight*dpr);
-  confettiCanvas.style.width="100vw";
-  confettiCanvas.style.height="100vh";
-}
-window.addEventListener("resize",resizeConfettiCanvas);
-const confettiInstance=confetti.create(confettiCanvas,{resize:false,useWorker:true});
-function fullScreenConfetti(){
-  const end=Date.now()+1600;
-  (function frame(){
-    confettiInstance({particleCount:12,spread:90,startVelocity:45,ticks:180,origin:{x:Math.random(),y:Math.random()*0.3}});
-    if(Date.now()<end) requestAnimationFrame(frame);
-  })();
-  setTimeout(()=>{ confettiInstance({particleCount:300,spread:140,startVelocity:60,ticks:220,origin:{x:0.5,y:0.55}}); },300);
-}
+// INTRO SCREEN LOGIC
+introYes.addEventListener("click", ()=>{
+  introScreen.style.display="none";
+  valentineScreen.style.display="block";
+  music.play().catch(()=>{});
+
+  // Initialize No button position
+  noBtn.style.left = "62%";
+  noBtn.style.top = "50%";
+  noBtn.style.transform = "translateY(-50%)";
+
+  // Pointermove for runaway No
+  const zone = document.getElementById("zone");
+  zone.addEventListener("pointermove", e => {
+    const b = noBtn.getBoundingClientRect();
+    const d = Math.hypot((b.left+b.width/2)-e.clientX,(b.top+b.height/2)-e.clientY);
+    if(d<140) moveNo(e.clientX,e.clientY);
+  });
+});
+
+introNo.addEventListener("click", ()=>{ introNo.innerText="Are you sure? 😢"; });
+
+// VALENTINE YES CLICK
+yesBtn.addEventListener("click", ()=>{
+  valentineScreen.style.display="none";
+  hint.style.display="none";
+  result.style.display="block";
+  resizeConfettiCanvas();
+  fullScreenConfetti();
+});
+
+// Prevent clicking No
+noBtn.addEventListener("click", e => e.preventDefault());
 </script>
 </body>
 </html>
