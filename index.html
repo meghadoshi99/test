@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>I Love You!</title>
+  <title>Will you be my Valentine?</title>
 
-  <!-- Confetti library -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <style>
@@ -30,7 +29,6 @@
       padding: 16px;
     }
 
-    /* Floating hearts */
     .heart {
       position: fixed;
       bottom: -20px;
@@ -63,10 +61,7 @@
       animation: fadeIn .6s ease;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
     h1 { font-size: clamp(26px, 4vw, 44px); margin: 12px 0 18px; }
     p { font-size: 18px; margin: 10px 0 25px; }
@@ -74,9 +69,6 @@
     .button-zone { position: relative; width: min(520px, 92%); height: 150px; margin: 0 auto; touch-action: none; }
 
     button {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
       padding: 16px 24px;
       font-size: 18px;
       font-weight: 800;
@@ -89,6 +81,12 @@
       transition: transform .12s ease, background .12s ease;
     }
 
+    /* Intro screen buttons horizontally spaced */
+    #introScreen button {
+      position: static;
+      margin: 0 12px;
+    }
+
     #yesBtn { left: 18%; background: var(--yes); color: #fff; }
     #yesBtn:hover { background: var(--yesHover); }
     #noBtn { left: 62%; background: #e5e7eb; color: #111827; }
@@ -98,7 +96,6 @@
     .result { display: none; margin-top: 18px; animation: pop .35s ease; }
     .result h2 { font-size: clamp(30px, 4.5vw, 46px); margin: 10px 0; }
 
-    /* Photo gallery */
     .gallery {
       margin-top: 20px;
       display: grid;
@@ -128,13 +125,15 @@
   <section id="introScreen">
     <h1>Hi Monks 💌</h1>
     <p>You are so special to me. I have a special question to ask you.<br>Would you like to proceed?</p>
-    <button id="introYes">Yes</button>
-    <button id="introNo">No</button>
+    <div style="display:flex; justify-content:center; gap:24px; margin-top:20px;">
+      <button id="introYes">Yes</button>
+      <button id="introNo">No</button>
+    </div>
   </section>
 
   <!-- VALENTINE SCREEN -->
   <section id="valentineScreen" style="display:none;">
-    <h1>I LOVE YOU!!! 💖</h1>
+    <h1>Arnav, will you be my valentine?</h1>
 
     <section class="button-zone" id="zone">
       <button id="yesBtn">Yes</button>
@@ -144,7 +143,7 @@
     <div class="hint" id="hint">“No” seems a bit shy 😈</div>
 
     <section class="result" id="result">
-      <!-- Photo gallery -->
+      <h2>I LOVE YOU!!! 💖</h2>
       <div class="gallery">
         <img src="photo1.jpg">
         <img src="photo2.jpg">
@@ -169,7 +168,7 @@ function createHeart() {
 }
 setInterval(createHeart, 500);
 
-/* Intro screen logic */
+/* Intro logic */
 const introScreen = document.getElementById("introScreen");
 const valentineScreen = document.getElementById("valentineScreen");
 const introYes = document.getElementById("introYes");
@@ -181,7 +180,7 @@ introYes.addEventListener("click", () => {
   valentineScreen.style.display = "block";
   music.play().catch(() => {});
 
-  // Pointermove listener for No button
+  // Valentine no button runs away
   const zone = document.getElementById("zone");
   const noBtn = document.getElementById("noBtn");
   zone.addEventListener("pointermove", e => {
@@ -193,7 +192,7 @@ introYes.addEventListener("click", () => {
 
 introNo.addEventListener("click", () => { introNo.innerText = "Are you sure? 😢"; });
 
-/* Valentine yes/no logic */
+/* Valentine yes/no */
 const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
 const result = document.getElementById("result");
